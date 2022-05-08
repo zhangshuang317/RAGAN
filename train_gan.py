@@ -57,9 +57,6 @@ f = open("./loss_gan.txt", 'a')
 print(time.strftime('|---------%Y-%m-%d   %H:%M:%S---------|', time.localtime(time.time())), file=f)
 discriminator.train()
 
-LAMBDA_CLS = 20
-LAMBDA_REC = 0.1
-LAMBDA_GP = 100
 
 for epoch in range(EPOCH):
     if epoch == 30:
