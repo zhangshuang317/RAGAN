@@ -3,13 +3,16 @@ import torch.nn as nn
 import functools
 from torch.nn import init
 
+
+'''
+Discriminator Network
+'''
 class netD(nn.Module):
     def __init__(self, image_size=128, conv_dim=64, c_dim=3, repeat_num=5):
         super(netD, self).__init__()
         layers = []
         layers.append(nn.Conv2d(2, conv_dim, kernel_size=3, stride=2, padding=1))
         layers.append(nn.PReLU())
-
         curr_dim = conv_dim
         for i in range(1, repeat_num):
             layers.append(nn.Conv2d(curr_dim, curr_dim * 2, kernel_size=3, stride=2, padding=1))
@@ -35,10 +38,7 @@ class netD(nn.Module):
         out_cls = self.conv2(h)
         return out_src, out_cls.view(out_cls.size(0), out_cls.size(1))
 
-
-
 def get_norm_layer(norm_type='instance'):
-
     if norm_type == 'batch':
         norm_layer = functools.partial(nn.BatchNorm2d, affine=True, track_running_stats=True)
     elif norm_type == 'instance':
@@ -52,9 +52,11 @@ def get_norm_layer(norm_type='instance'):
     return norm_layer
 
 
+'''
+Generator Network
+'''
 
-def define_G(input_nc, output_nc, ngf, netG, norm='group', use_dropout=False, init_type='normal', init_gain=0.02,
-             gpu_ids=[]):
+def define_G(input_nc, output_nc, ngf, netG, norm='group', use_dropout=False, init_type='normal', init_gain=0.02):
 
     norm_layer = get_norm_layer(norm_type=norm)
 
@@ -63,9 +65,6 @@ def define_G(input_nc, output_nc, ngf, netG, norm='group', use_dropout=False, in
     else:
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
     return init_net(net, init_type, init_gain)
-
-
-
 
 class UnetGenerator(nn.Module):
 
@@ -91,9 +90,7 @@ class UnetGenerator(nn.Module):
         x = torch.cat([x, c], dim=1)
         return self.model(x)
 
-
 def init_weights(net, init_type='kaiming', init_gain=0.02):
-
 
     def init_func(m):
         classname = m.__class__.__name__
@@ -124,6 +121,9 @@ def init_net(net, init_type='normal', init_gain=0.02):
     return net
 
 
+'''
+Skip Connection Module
+'''
 class UnetSkipConnectionBlock(nn.Module):
 
     def __init__(self, outer_nc, inner_nc, input_nc=None,
