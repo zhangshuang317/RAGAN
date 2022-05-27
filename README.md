@@ -15,8 +15,7 @@ Download training dataset of https://www.med.upenn.edu/sbia/brats2018.html.
    python test_gan.py
 
 ## Result
-* You can visit https://pan.baidu.com/s/1ehgi9M9ynUs7hT6zyxfNcg/ to see the full version of Synthetic data
-* extraction code: plj3
+* You can visit https://zenodo.org/record/6563153#.Yo2wdHVByUm to see the full version of Synthetic data
 
 ## License
 This work is licensed under MIT License. See LICENSE for details.
