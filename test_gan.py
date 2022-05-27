@@ -1,7 +1,7 @@
 import torch
 from torch.utils import data
 from dataset_brain import Dataset_gan
-from model import define_G
+from RAGAN import define_G
 from utils import seed_torch
 import numpy as np
 import matplotlib as mpl
