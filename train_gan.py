@@ -145,7 +145,7 @@ for epoch in range(EPOCH):
         '''
         fake = generator(t2.float().cuda(), label)
         fake_t2 = generator(fake.float().cuda(), label)
-        g_loss_ragan = torch.mean(torch.abs(fake.float().cuda() - fake_t2).sum([1, 2, 3]))#Cycle consistency loss
+        g_loss_ragan = torch.mean(torch.abs(t2.float().cuda() - fake_t2).sum([1, 2, 3]))#Cycle consistency loss
         g_loss =  g_loss_fake + LAMBDA_CLS * g_loss_cls + LAMBDA_REC * g_loss_rec + LAMBDA_REC * g_loss_ragan
 
         optimizer_g.zero_grad()
