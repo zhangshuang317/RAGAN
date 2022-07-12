@@ -111,21 +111,26 @@ for epoch in range(EPOCH):
             elif l == 2:
                 real[i] = t1[i]
             else:
-                print('erro!!!')
+                print('error!!!')
 
         '''
         discriminator
         '''
         out_src, out_cls = discriminator(real.float().cuda(), t2.float().cuda())
-        d_loss_real = - torch.mean(out_src.sum([1, 2, 3]))#True Discrimination Loss Fuction
-        d_loss_cls = classification_loss(out_cls, label)#Classification Discrimination Loss Fuction
-        fake = generator(t2.float().cuda(), label)#Composite image
+        # True discrimination loss Function
+        d_loss_real = - torch.mean(out_src.sum([1, 2, 3]))
+        # Modal classification loss function
+        d_loss_cls = classification_loss(out_cls, label)
+        # Generate the fake T1, T1ce or FLAIR image from the given T2 image
+        fake = generator(t2.float().cuda(), label)
         out_src, out_cls = discriminator(fake.detach(), t2.float().cuda())
-        d_loss_fake = torch.mean(out_src.sum([1, 2, 3]))#Fake Discrimination Loss Fuction
+        # Fake discrimination loss function
+        d_loss_fake = torch.mean(out_src.sum([1, 2, 3]))
         alpha = torch.rand(real.size(0), 1, 1, 1).cuda()
         x_hat = (alpha * real.cuda().data + (1 - alpha) * fake.data).requires_grad_(True)
         out_src, _ = discriminator(x_hat, t2.float().cuda())
-        d_loss_gp = gradient_penalty(out_src, x_hat)#Wasserstein adversarial loss and Gradient penalty loss
+        # The adversarial function of Wasserstein GAN with Wasserstein adversarial loss and gradient penalty loss
+        d_loss_gp = gradient_penalty(out_src, x_hat)
         d_loss =  d_loss_real +  d_loss_fake + LAMBDA_CLS * d_loss_cls + LAMBDA_GP * d_loss_gp
         optimizer_d.zero_grad()
         d_loss.backward()
@@ -134,10 +139,12 @@ for epoch in range(EPOCH):
         '''
         Generator
         '''
-        fake = generator(t2.float().cuda(), label)#Composite image
-        out_src, out_cls = discriminator(fake, t2.float().cuda())
+        # Generate the fake T1, T1ce or FLAIR image from the given T2 image
+        fake = generator(t2.float().cuda(), label)
         g_loss_fake = -torch.mean(out_src.sum([1, 2, 3]))
+        # Modal classification loss function
         g_loss_cls = classification_loss(out_cls, label)
+        # The adversarial loss function
         g_loss_rec = torch.mean(torch.abs(real.float().cuda() - fake).sum([1, 2, 3]))
 
         '''
@@ -145,8 +152,11 @@ for epoch in range(EPOCH):
         '''
         fake = generator(t2.float().cuda(), label)
         fake_t2 = generator(fake.float().cuda(), label)
-        g_loss_ragan = torch.mean(torch.abs(t2.float().cuda() - fake_t2).sum([1, 2, 3]))#Cycle consistency loss
-        g_loss =  g_loss_fake + LAMBDA_CLS * g_loss_cls + LAMBDA_REC * g_loss_rec + LAMBDA_REC * g_loss_ragan
+        # Reconstruction consistency loss, which is defined as the expectation (mean) value over the L1 distance between the fake
+        # T2 image reconstructed by the generator from the fake T1, T1ce or FLAIR image and the input T2 image.
+        g_loss_ragan = torch.mean(torch.abs(t2.float().cuda() - fake_t2).sum([1, 2, 3]))
+        ##
+        g_loss = g_loss_fake + LAMBDA_CLS * g_loss_cls + LAMBDA_REC * g_loss_rec + LAMBDA_REC * g_loss_ragan
 
         optimizer_g.zero_grad()
         g_loss.backward()

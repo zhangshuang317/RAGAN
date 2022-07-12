@@ -1,3 +1,13 @@
+# In this script we define the generator, discriminator used in the RAGAN network. The contributions of the RAGAN are:
+# 1) We do not propose a novel structure of Generator, but design a novel architecture of applying the conventional
+# U-shaped Generator twice. For the first time, it takes the T2 image as input and generates the fake T1, T1ce and FLAIR
+# image, while for the second time, it takes the fake T1, T1ce and FLAIR images as input and generates a fake T2 image.
+# The fake T1, T1ce and FLAIR images are compared with the ground truth T1, T1ce and FLAIR images to calculate the
+# adversarial loss and modal classification loss, while the fake T2 image is compared with the input T2 image to
+# calculate the reconstruction consistency loss.
+# 2) We propose a discriminator with the auxiliary classifier that can discriminate the authenticity of the input data,
+# so that it can control multiple categories.
+
 import torch
 import torch.nn as nn
 import functools
@@ -7,6 +17,8 @@ from torch.nn import init
 '''
 Discriminator Network
 '''
+# The discriminator network structure as shown in Fig. 5 in the manuscript. The discriminator that introduces the
+# auxiliary classifier can discriminate the authenticity of the input data, so that it can control multiple categories.
 class netD(nn.Module):
     def __init__(self, image_size=128, conv_dim=64, c_dim=3, repeat_num=5):
         super(netD, self).__init__()
@@ -66,6 +78,12 @@ def define_G(input_nc, output_nc, ngf, netG, norm='group', use_dropout=False, in
         raise NotImplementedError('Generator model name [%s] is not recognized' % netG)
     return init_net(net, init_type, init_gain)
 
+# The U-Shaped generator, of which the structure is shown in Fig. 4 in the manuscript. The generator is used twice in
+# every training iteration. For the first time, it takes the T2 image as input and generates the fake T1, T1ce and FLAIR
+# image, while for the second time, it takes the fake T1, T1ce and FLAIR images as input and generates a fake T2 image.
+# The fake T1, T1ce and FLAIR images are compared with the groud truth T1, T1ce and FLAIR images to calculate the
+# adversarial loss and modal classification loss, while the fake T2 image is compared with the input T2 image to
+# calculate the reconstruction consistency loss.
 class UnetGenerator(nn.Module):
 
     def __init__(self, input_nc, output_nc, num_downs, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False):
@@ -124,6 +142,7 @@ def init_net(net, init_type='normal', init_gain=0.02):
 '''
 Skip Connection Module
 '''
+# The structure of the skip connection used for the U-shaped network as generator.
 class UnetSkipConnectionBlock(nn.Module):
 
     def __init__(self, outer_nc, inner_nc, input_nc=None,
